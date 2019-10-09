@@ -70,9 +70,9 @@ if __name__ == '__main__':
         description="Export labelbox data to instance or semantic segmentation masks")
     parser.add_argument('command',
                         help="'instance' or 'semantic'")
-    parser.add_argument('--split', default=0.1,
+    parser.add_argument('--split', default=0.1, type=float,
                         help="Train/validation split, float in range 0 to 1.")
-    parser.add_argument('--start', default=0,
+    parser.add_argument('--start', default=0, type=int,
                         help="Image to start exporting from. Helpful if exporting fails at some point.")
     parser.add_argument('--data',
                         help="Path Labelbox json data")
@@ -85,10 +85,8 @@ if __name__ == '__main__':
     # Validate arguments
     if args.command == 'instance' or args.command == 'semantic':
         assert args.data, "Argument --data is required for exporting"
-        assert 0<= float(args.split) <= 1, "Argument --split must be between 0 and 1"
+        assert 0<= args.split <= 1, "Argument --split must be between 0 and 1"
 
-    args.split = float(args.split)
-    args.start = int(args.start)
     # Creating dataset directories
     if not os.path.exists(args.save_folder):
         os.makedirs('{}/train/images'.format(args.save_folder))
