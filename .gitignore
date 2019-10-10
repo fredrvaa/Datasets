@@ -2,7 +2,7 @@
 exporters/dataset/
 generators/generated/
 vid_to_img/
-!vid_to_img/vid_to_img.py
+!*/vid_to_img.py
 
 
 # Byte-compiled / optimized / DLL files
