@@ -7,6 +7,11 @@ import requests
 from PIL import Image
 from io import BytesIO
 
+def path_to_name(path):
+    tail = os.path.split(path)[-1]
+    filename = tail.rsplit( ".", 1 )[0]
+    return filename
+
 def url_to_image(url):
     res = requests.get(url)
     image = np.array(Image.open(BytesIO(res.content)))
@@ -17,6 +22,7 @@ def write_instance_masks(masks_data, mask_path):
         mask_url = mask_data['instanceURI']
         mask = url_to_image(mask_url)
         imageio.imwrite("{}/{}.png".format(mask_path, j), mask)
+    print("Saved mask")
 
 def write_semantic_mask(shape, masks_data, mask_path):
     mask = np.zeros((shape[0], shape[1], 4), dtype='uint8')
@@ -28,32 +34,26 @@ def write_semantic_mask(shape, masks_data, mask_path):
     imageio.imwrite(mask_path, mask)
     print("Saved mask")
 
-def write_images(data, num_train, args):
+def write_images(data, args, save_path):
     for i, image_data in enumerate(data[args.start:], start = args.start):
-        # Selecting train or validation
-        if i <= num_train:
-            subset = 'train'
-        else:
-            subset = 'val'
-
         # Reading image from url
         image_url = image_data['Labeled Data']
         image = imageio.imread(image_url)
 
         # Writing image
-        image_path = '{}/{}/images/{}.{}'.format(args.save_folder, subset, i, args.file_type)
+        image_path = '{}/images/{}{}'.format(save_path, i, args.save_type)
         imageio.imwrite(image_path, image)
 
         # Writing masks
         masks_data = image_data['Label']['objects']    
 
         if args.command == 'semantic':
-            mask_path = '{}/{}/masks/{}.png'.format(args.save_folder, subset, i)
+            mask_path = '{}/masks/{}.png'.format(save_path, i)
             write_semantic_mask(image.shape, masks_data, mask_path)
 
         elif args.command == 'instance':
             # Creating mask directories
-            mask_path = 'dataset/{}/masks/{}'.format(subset, i)
+            mask_path = '{}/masks/{}'.format(save_path, i)
             if not os.path.exists(mask_path):
                 os.makedirs(mask_path)
 
@@ -70,40 +70,41 @@ if __name__ == '__main__':
         description="Export labelbox data to instance or semantic segmentation masks")
     parser.add_argument('command',
                         help="'instance' or 'semantic'")
-    parser.add_argument('--split', default=0.1, type=float,
-                        help="Train/validation split, float in range 0 to 1.")
     parser.add_argument('--start', default=0, type=int,
                         help="Image to start exporting from. Helpful if exporting fails at some point.")
-    parser.add_argument('--data',
+    parser.add_argument('--data_path',
                         help="Path Labelbox json data")
-    parser.add_argument('--save_folder', default = 'dataset',
+    parser.add_argument('--save_path', default = None,
                         help="Path to save folder")
-    parser.add_argument('--file_type', default='png',
-                        help="File type as jpg or png")
+    parser.add_argument('--save_type', default='.png',
+                        help="Save type, '.jpg' or '.png'")
     args = parser.parse_args()
 
     # Validate arguments
     if args.command == 'instance' or args.command == 'semantic':
-        assert args.data, "Argument --data is required for exporting"
+        assert args.data_path, "Argument --data is required for exporting"
         assert 0<= args.split <= 1, "Argument --split must be between 0 and 1"
 
-    # Creating dataset directories
-    if not os.path.exists(args.save_folder):
-        os.makedirs('{}/train/images'.format(args.save_folder))
-        os.makedirs('{}/val/images'.format(args.save_folder))
-        os.makedirs('{}/train/masks'.format(args.save_folder))
-        os.makedirs('{}/val/masks'.format(args.save_folder))
-    print("Created directories")
-    # Loading data
-    with open(args.data) as json_file:
-        data = json.load(json_file)    
+    if args.save_path:
+        save_path = args.save_path
+    else:
+        save_path = path_to_name(args.data_path)
 
-    # Train/val split
-    num_images = len(data)
-    num_train = num_images - int(num_images * args.split)
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+
+    # Creating dataset directories
+    if not os.path.exists(save_path):
+        os.makedirs('{}/images'.format(args.save_path))
+        os.makedirs('{}/masks'.format(args.save_path))
+    print("Created directories")
+
+    # Loading data
+    with open(args.data_path) as json_file:
+        data = json.load(json_file)
     
     # Writing images and masks
-    write_images(data, num_train, args)
+    write_images(data, args, save_path)
 
     
 
