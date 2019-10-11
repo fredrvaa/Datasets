@@ -101,7 +101,7 @@ if __name__ == '__main__':
     parser.add_argument('--textures_path', default='rust_textures', type=str,
                         help="Path to texture directory")
     parser.add_argument('--save_path', default='generated', type=str,
-                        help="path to save directory")   
+                        help="Path to save directory")   
     parser.add_argument('--num_images', default=1, type=int,
                         help="Number of images to be generated") 
     parser.add_argument('--start_iter', default=0, type=int,

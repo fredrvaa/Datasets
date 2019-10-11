@@ -1,4 +1,3 @@
-import requests
 import json
 import os
 import numpy as np
@@ -41,14 +40,14 @@ def write_images(data, args, save_path):
         image = imageio.imread(image_url)
 
         # Writing image
-        image_path = '{}/images/{}{}'.format(save_path, i, args.save_type)
+        image_path = '{}/images/{}_{}{}'.format(save_path, save_path, i, args.save_type)
         imageio.imwrite(image_path, image)
 
         # Writing masks
         masks_data = image_data['Label']['objects']    
 
         if args.command == 'semantic':
-            mask_path = '{}/masks/{}.png'.format(save_path, i)
+            mask_path = '{}/masks/{}_{}.png'.format(save_path, save_path, i)
             write_semantic_mask(image.shape, masks_data, mask_path)
 
         elif args.command == 'instance':
@@ -82,22 +81,18 @@ if __name__ == '__main__':
 
     # Validate arguments
     if args.command == 'instance' or args.command == 'semantic':
-        assert args.data_path, "Argument --data is required for exporting"
-        assert 0<= args.split <= 1, "Argument --split must be between 0 and 1"
+        assert args.data_path, "Argument --data_path is required for exporting"
 
     if args.save_path:
         save_path = args.save_path
     else:
         save_path = path_to_name(args.data_path)
 
-    if not os.path.exists(save_path):
-        os.mkdir(save_path)
-
     # Creating dataset directories
     if not os.path.exists(save_path):
         os.makedirs('{}/images'.format(args.save_path))
         os.makedirs('{}/masks'.format(args.save_path))
-    print("Created directories")
+        print("Created directories")
 
     # Loading data
     with open(args.data_path) as json_file:

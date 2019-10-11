@@ -19,19 +19,29 @@
 import os
 import shutil
 import random
+from PIL import Image
+
 
 def path_to_path(path):
     tail = os.path.split(path)[-1]
     return tail
 
-def move_files(dataset_path, save_path, split): 
+def move_files(dataset_path, save_path, split, min_dim): 
     image_path = os.path.join(dataset_path, 'images')
     masks_path = os.path.join(dataset_path, 'masks')
-
+    print('run')
     for file in os.listdir(image_path):
         subset = random.choices(population=['test', 'train', 'val'], weights=split, k=1)[0]
-        shutil.move(os.path.join(image_path, file), os.path.join(save_path, subset,file))
-        shutil.move(os.path.join(masks_path, file), os.path.join(save_path, '{}_labels'.format(subset),file))
+
+        #Skips images that are less than min_dim in any dimension
+        if min_dim:
+            image = Image.open(os.path.join(image_path, file))
+            if any(size < min_dim for size in image.size):
+                print('Skipped {} because size was {}'.format(file, image.size))
+                continue
+
+        shutil.copy(os.path.join(image_path, file), os.path.join(save_path, subset, file))
+        shutil.copy(os.path.join(masks_path, file), os.path.join(save_path, '{}_labels'.format(subset), file))
 
 if __name__ == '__main__':
     import argparse
@@ -45,6 +55,8 @@ if __name__ == '__main__':
                         help="Path to save directory")
     parser.add_argument('--split', type=str, default='0.1/0.7/0.2',
                         help="Dataset split on the form 'test/train/val'. Example: '0.1/0.7/0.2'. Must add to 1")
+    parser.add_argument('--min_dim', type=int, default=None,
+                        help="Minimum dimension of image. May be helpful for semantic segmentation. E.g 512.")
     args = parser.parse_args()
 
     args.split = [float(i) for i in args.split.split("/")]
@@ -61,8 +73,8 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(args.save_path, 'val'))
         os.makedirs(os.path.join(args.save_path, 'val_labels'))
         print('Created directories')
-
-    move_files(args.dataset_path, args.save_path, args.split)
+        
+    move_files(args.dataset_path, args.save_path, args.split, args.min_dim)
 
     
 

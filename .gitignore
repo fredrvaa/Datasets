@@ -1,9 +1,11 @@
 # Data
+converters/*
 exporters/*
 generators/*
 vid_to_img/*
 
 # Exclude python files
+!converters/semantic_segmentation_suite.py
 !exporters/labelbox_exporter.py
 !generators/rust_texture.py
 !vid_to_img/vid_to_img.py
