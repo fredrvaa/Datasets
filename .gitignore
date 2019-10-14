@@ -4,11 +4,22 @@ exporters/*
 generators/*
 vid_to_img/*
 
-# Exclude python files
+# Exclude converter files
 !converters/semantic_segmentation_suite.py
+
+# Exclude exporter files
 !exporters/labelbox_exporter.py
+
+# Exclude generator files
+!generators/rust_texture/
+generators/rust_texture/*
 !generators/rust_texture/rust_texture.py
+
+!generators/no_rust/
+generators/no_rust/*
 !generators/no_rust/no_rust.py
+
+# Exclude vid_to_img
 !vid_to_img/vid_to_img.py
 
 # Byte-compiled / optimized / DLL files
