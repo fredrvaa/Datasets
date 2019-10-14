@@ -26,7 +26,7 @@ def path_to_path(path):
     tail = os.path.split(path)[-1]
     return tail
 
-def move_files(dataset_path, save_path, split, min_dim): 
+def copy_files(dataset_path, save_path, split, min_dim): 
     image_path = os.path.join(dataset_path, 'images')
     masks_path = os.path.join(dataset_path, 'masks')
     print('run')
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(args.save_path, 'val_labels'))
         print('Created directories')
         
-    move_files(args.dataset_path, args.save_path, args.split, args.min_dim)
+    copy_files(args.dataset_path, args.save_path, args.split, args.min_dim)
 
     
 
