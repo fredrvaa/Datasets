@@ -1,8 +1,13 @@
 # Data
+augmenters/*
 converters/*
 exporters/*
 generators/*
 vid_to_img/*
+
+# Exclude augmenter files
+!augmenters/semantic_augment.py
+!augmenters/instance_augment.py
 
 # Exclude converter files
 !converters/semantic_segmentation_suite.py
